@@ -1,0 +1,178 @@
+loadstring(game:HttpGet("https://pastebin.com/raw/JziBTEbZ"))()
+loadstring(game:HttpGet("https://pastebin.com/raw/xGzvr7Lw"))()
+
+local GetName = game:GetService("MarketplaceService"):GetProductInfo(game.PlaceId)
+local Workspace = game:GetService("Workspace")
+
+
+    local Plr = game.Players.LocalPlayer
+    local Char = Plr.Character
+    local Humanoid = Char:WaitForChild("Humanoid")
+
+    local Fluent = loadstring(game:HttpGet("https://github.com/dawid-scripts/Fluent/releases/latest/download/main.lua"))()
+    local SaveManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/SaveManager.lua"))()
+    local InterfaceManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/InterfaceManager.lua"))()
+    
+    local Window = Fluent:CreateWindow({
+        Title = GetName.Name.. " | ".. "Lyzer Hub",
+        SubTitle = "by Dogla",
+        TabWidth = 120,
+        Size = UDim2.fromOffset(520, 360),
+        Acrylic = true,
+        Theme = "Darker",
+        MinimizeKey = Enum.KeyCode.LeftControl
+    })
+    
+
+    
+    local Tabs = {
+        Farm = Window:AddTab({ Title = "Farm", Icon = "flame" }),
+        Misc = Window:AddTab({ Title = "Misc", Icon = "codesandbox" }),
+        Settings = Window:AddTab({ Title = "Settings", Icon = "settings" })
+    }
+
+    local Options = Fluent.Options
+    
+    
+        Fluent:Notify({
+            Title = "Welcome",
+            Content = "Loaded as " .. Plr.DisplayName,
+            SubContent = "",
+            Duration = 3
+        })
+
+        Tabs.Farm:AddSection("Player")
+        local ClickToggle = Tabs.Farm:AddToggle("ClickToggle", {Title = "Auto Combat Click", Default = false})
+        ClickToggle:OnChanged(function()
+            while ClickToggle.Value do wait()
+                local args = {
+                    [1] = "Handle_Combat",
+                    [2] = game:GetService("Players").LocalPlayer.Character,
+                    [3] = 4
+                }
+                
+                game:GetService("ReplicatedStorage").Remotes.To_Server.Handle_Initiate_S:FireServer(unpack(args))            
+            end
+        end)
+
+        local npcSpawns = workspace.Mobs:GetChildren()
+
+        local npcNames = {}
+        
+        for _, npcSpawn in ipairs(npcSpawns) do
+            local humanoidRootPart = npcSpawn:FindFirstChild("HumanoidRootPart")
+            if humanoidRootPart then
+                local npcName = npcSpawn.Name
+                if not table.find(npcNames, npcName) then
+                    table.insert(npcNames, npcName)
+                end
+            end
+        end
+        
+
+Tabs.Farm:AddSection("Mob Farm")
+local MobsDropdown = Tabs.Farm:AddDropdown("Dropdown", {
+    Title = "Select Mob",
+    Values = npcNames,
+    Multi = false,
+    Default = 1,
+})
+
+MobsDropdown:SetValue(npcNames)
+
+local Toggle2 = Tabs.Farm:AddToggle("MobToggle", { Title = "Auto Mob", Default = false })
+
+local function TeleportToSelectedMob(MobTarget)
+    while Toggle2.Value do
+        wait()
+        local children = workspace.Mobs:GetChildren()
+        local foundTarget = false
+        for _, child in ipairs(children) do
+            if child.Name == MobTarget and child:FindFirstChild("HumanoidRootPart") and child.Humanoid.Health > 0 then
+                Char.HumanoidRootPart.CFrame = child.HumanoidRootPart.CFrame * CFrame.new(0, 0, 4)
+                Workspace.Gravity = 0
+                foundTarget = true 
+                break 
+            end
+        end
+
+        if not foundTarget then
+            Workspace.Gravity =  196.2
+        end
+    end
+end
+
+Toggle2:OnChanged(function()
+    if Toggle2.Value then
+        local selectedMob = MobsDropdown.Value
+        TeleportToSelectedMob(selectedMob)
+    else
+        Workspace.Gravity =  196.2
+    end
+end)
+
+Tabs.Farm:AddButton({
+    Title = "Refresh Mobs",
+    Description = "Refresh nearest mobs",
+    Callback = function()
+        local npcSpawns = workspace.Mobs:GetChildren()
+
+        local npcNames = {}
+
+        for _, npcSpawn in ipairs(npcSpawns) do
+            local humanoidRootPart = npcSpawn:FindFirstChild("HumanoidRootPart")
+            if humanoidRootPart then
+            local npcName = npcSpawn.Name
+            if not table.find(npcNames, npcName) then
+                table.insert(npcNames, npcName)
+            end
+            end
+        end
+
+        MobsDropdown:SetValues(npcNames)
+    end
+})
+
+
+
+        Tabs.Farm:AddSection("Fruit")
+        local TpFruitToggle = Tabs.Farm:AddToggle("DbzToggle", {Title = "Teleport to Fruits", Default = false})
+        TpFruitToggle:OnChanged(function()
+            while TpFruitToggle.Value do 
+                wait()
+                local Fruits = workspace.OtherInteractables:GetChildren()
+                for _, Fruit in ipairs(Fruits) do
+                    if Fruit then
+                        Char.HumanoidRootPart.CFrame = Fruit.WorldPivot
+                        warn("Collected " ..Fruit.Name)
+                    end
+                end
+            end
+        end)
+
+        local SvHopToggle = Tabs.Farm:AddToggle("SvHopToggle", {Title = "Server Hop", Default = false})
+        SvHopToggle:OnChanged(function()
+            while SvHopToggle.Value do wait()
+                loadstring(game:HttpGet("https://pastebin.com/raw/bDb5LWgm"))()
+                wait(10)
+            end
+        end)
+    
+    
+    SaveManager:SetLibrary(Fluent)
+    InterfaceManager:SetLibrary(Fluent)
+    
+    SaveManager:IgnoreThemeSettings()
+    
+    SaveManager:SetIgnoreIndexes({})
+    
+    InterfaceManager:SetFolder("FluentScriptHub")
+    SaveManager:SetFolder("FluentScriptHub/specific-game")
+    
+    InterfaceManager:BuildInterfaceSection(Tabs.Settings)
+    SaveManager:BuildConfigSection(Tabs.Settings)
+    
+    
+    Window:SelectTab(1)
+
+    SaveManager:LoadAutoloadConfig()
